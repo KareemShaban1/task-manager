@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface Task {
@@ -46,6 +47,7 @@ interface TaskFormProps {
 }
 
 export const TaskForm = ({ open, onOpenChange, task, onSave, projects }: TaskFormProps) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<Task>({
     name: "",
     description: "",
@@ -87,6 +89,11 @@ export const TaskForm = ({ open, onOpenChange, task, onSave, projects }: TaskFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("You must be logged in to create tasks");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -99,6 +106,7 @@ export const TaskForm = ({ open, onOpenChange, task, onSave, projects }: TaskFor
         status: formData.status,
         comment: formData.comment || null,
         project_id: formData.project_id || null,
+        user_id: user.id,
       };
 
       if (task?.id) {

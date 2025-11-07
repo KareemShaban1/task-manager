@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderPlus, Filter } from "lucide-react";
+import { Plus, FolderPlus, Filter, LogOut, User } from "lucide-react";
 import { TaskCard } from "@/components/TaskCard";
 import { TaskForm } from "@/components/TaskForm";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -44,6 +52,8 @@ interface Project {
 }
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("all");
@@ -54,6 +64,11 @@ const Index = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -123,9 +138,25 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Task Manager</h1>
-          <p className="text-muted-foreground">Organize and track your tasks efficiently</p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Task Manager</h1>
+            <p className="text-muted-foreground">Organize and track your tasks efficiently</p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <User className="h-4 w-4" />
+                {user?.email}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">

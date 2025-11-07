@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface ProjectDialogProps {
@@ -30,6 +31,7 @@ const colors = [
 ];
 
 export const ProjectDialog = ({ open, onOpenChange, onSave }: ProjectDialogProps) => {
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedColor, setSelectedColor] = useState(colors[0]);
@@ -37,6 +39,11 @@ export const ProjectDialog = ({ open, onOpenChange, onSave }: ProjectDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("You must be logged in to create projects");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -44,6 +51,7 @@ export const ProjectDialog = ({ open, onOpenChange, onSave }: ProjectDialogProps
         name,
         description: description || null,
         color: selectedColor,
+        user_id: user.id,
       });
 
       if (error) throw error;
